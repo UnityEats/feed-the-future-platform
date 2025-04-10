@@ -31,7 +31,12 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-primary font-bold text-xl">Feed the Future</span>
+              <img 
+                src="/lovable-uploads/6165e66d-dc06-41e4-95e5-407fe2d78a54.png" 
+                alt="UnityEats Logo" 
+                className="h-8 w-8 mr-2" 
+              />
+              <span className="text-primary font-bold text-xl">UnityEats</span>
             </Link>
           </div>
 

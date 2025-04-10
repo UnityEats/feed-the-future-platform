@@ -14,16 +14,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 122 39% 49%;
+    --primary: 262 80% 75%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 39 100% 50%;
+    --secondary: 270 60% 55%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 110 70% 46%;
+    --accent: 262 80% 95%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +31,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 122 39% 49%;
+    --ring: 262 80% 75%;
 
     --radius: 0.5rem;
 
@@ -55,16 +55,16 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 122 39% 45%;
+    --primary: 262 80% 70%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 39 100% 47%;
+    --secondary: 270 60% 50%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 110 70% 40%;
+    --accent: 262 80% 25%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -72,7 +72,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 122 39% 45%;
+    --ring: 262 80% 70%;
 
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 210 20% 98%;
@@ -97,7 +97,7 @@
 
 @layer components {
   .hero-gradient {
-    @apply bg-gradient-to-r from-success-light to-success dark:from-success/80 dark:to-success dark:text-white;
+    @apply bg-gradient-to-r from-purple-light to-purple dark:from-purple/80 dark:to-purple-dark dark:text-white;
   }
   
   .btn-primary {
@@ -105,7 +105,7 @@
   }
   
   .btn-secondary {
-    @apply bg-warning hover:bg-warning/90 text-white rounded-md px-4 py-2 transition-all;
+    @apply bg-secondary hover:bg-secondary/90 text-white rounded-md px-4 py-2 transition-all;
   }
   
   .card-hover {

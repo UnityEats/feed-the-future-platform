@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
@@ -15,9 +14,19 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) || "light"
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check local storage first
+    const storedTheme = localStorage.getItem("theme") as Theme;
+    if (storedTheme) return storedTheme;
+    
+    // Otherwise check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return "dark";
+    }
+    
+    // Default to light
+    return "light";
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

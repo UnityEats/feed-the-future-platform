@@ -16,9 +16,9 @@ export function ThemeToggle() {
       onPressedChange={toggleTheme}
     >
       {theme === "dark" ? (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-4 w-4 text-purple" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-4 w-4 text-purple" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Toggle>
