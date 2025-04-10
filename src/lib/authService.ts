@@ -110,3 +110,24 @@ export const updateUserProfile = (userData: Partial<User>): User | null => {
 
   return updatedUser;
 };
+
+// Check if the current user has a specific role
+export const hasRole = (role: UserRole): boolean => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return false;
+  
+  return currentUser.role === role;
+};
+
+// Check if the user is authenticated and redirect if not
+export const requireAuth = (callback: () => void): void => {
+  const currentUser = getCurrentUser();
+  
+  if (!currentUser) {
+    // In a real app with routing, we would redirect to login page
+    window.location.href = "/login";
+    return;
+  }
+  
+  callback();
+};

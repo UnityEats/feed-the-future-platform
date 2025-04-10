@@ -55,7 +55,8 @@ export const getDonations = (filters?: Partial<Donation>): Donation[] => {
 // Update a donation's status
 export const updateDonationStatus = (
   donationId: string,
-  newStatus: DonationStatus
+  newStatus: DonationStatus,
+  ngoId?: string
 ): Donation | null => {
   // In a real app, this would update the donation on the backend
   // For now, we'll update our mock data
@@ -66,8 +67,36 @@ export const updateDonationStatus = (
   mockDonations[donationIndex] = {
     ...mockDonations[donationIndex],
     status: newStatus,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    ...(ngoId && { ngoId })
   };
   
   return mockDonations[donationIndex];
+};
+
+// Get donations by donor ID
+export const getDonationsByDonorId = (donorId: string): Donation[] => {
+  return getDonations({ donorId });
+};
+
+// Get donations by NGO ID
+export const getDonationsByNgoId = (ngoId: string): Donation[] => {
+  return getDonations({ ngoId });
+};
+
+// Get available donations (pending donations without an NGO assigned)
+export const getAvailableDonations = (): Donation[] => {
+  return mockDonations.filter(donation => 
+    donation.status === "pending" && !donation.ngoId
+  );
+};
+
+// Get donation statistics
+export const getDonationStats = () => {
+  return {
+    total: mockDonations.length,
+    pending: mockDonations.filter(d => d.status === "pending").length,
+    accepted: mockDonations.filter(d => d.status === "accepted").length,
+    collected: mockDonations.filter(d => d.status === "collected").length,
+  };
 };

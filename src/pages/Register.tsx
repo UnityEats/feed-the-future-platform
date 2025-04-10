@@ -85,8 +85,12 @@ const Register = () => {
       // For this demo, we'll use our mock auth service
       setTimeout(() => {
         const newUser = registerUser({
-          ...data,
           role: "donor",
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phone: data.phone || undefined,
+          address: data.address || undefined,
         });
         
         if (newUser) {
@@ -111,8 +115,14 @@ const Register = () => {
       // In a real app, we'd make an API call here and handle verification
       setTimeout(() => {
         const newUser = registerUser({
-          ...data,
           role: "ngo",
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phone: data.phone || undefined,
+          address: data.address || undefined,
+          website: data.website,
+          bio: data.bio,
         });
         
         if (newUser) {

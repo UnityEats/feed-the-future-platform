@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createDonation } from "@/lib/donationService";
-import { requireAuth } from "@/lib/authService";
+import { getCurrentUser, requireAuth } from "@/lib/authService";
 import { ArrowLeft } from "lucide-react";
 
 // Form validation schema
@@ -60,8 +60,12 @@ const DonationForm = () => {
         setTimeout(() => {
           try {
             const newDonation = createDonation({
-              ...data,
+              foodItem: data.foodItem,
+              quantity: data.quantity,
+              unit: data.unit,
               expiryDate: data.expiryDate,
+              address: data.address,
+              notes: data.notes
             });
             
             toast.success("Donation created successfully!");
