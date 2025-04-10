@@ -1,92 +1,112 @@
 
-import { User } from "@/types";
-import { mockUsers } from "./mockData";
-import { toast } from "sonner";
+import { User, UserRole } from "@/types";
 
-// Store current user in localStorage
-const CURRENT_USER_KEY = "feed_the_future_current_user";
+// Mock users for demonstration
+const mockUsers: User[] = [
+  {
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    role: "donor",
+    phone: "123-456-7890",
+    address: "123 Main St, Anytown, USA",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&dpr=2&q=80",
+  },
+  {
+    id: "2",
+    name: "Food Bank Inc",
+    email: "foodbank@example.com",
+    role: "ngo",
+    phone: "987-654-3210",
+    address: "456 Oak St, Othertown, USA",
+    bio: "We collect and distribute food to those in need.",
+    avatar: "https://images.unsplash.com/photo-1589063805942-a74e5c81b579?w=300&h=300&dpr=2&q=80",
+  },
+];
 
-// Initialize user data in localStorage if it doesn't exist
-const initializeUserData = () => {
-  if (!localStorage.getItem("feed_the_future_users")) {
-    localStorage.setItem("feed_the_future_users", JSON.stringify(mockUsers));
+// Helper function to get a deterministic ID
+const generateId = (): string => {
+  return Math.random().toString(36).substring(2, 9);
+};
+
+// Local storage keys
+const USER_KEY = "current_user";
+
+// Register a new user
+export const register = (userData: Omit<User, "id">): User => {
+  // Check if email is already in use
+  const existingUser = mockUsers.find(user => user.email === userData.email);
+  if (existingUser) {
+    throw new Error("Email is already in use");
   }
-};
 
-// Get all users
-export const getUsers = (): User[] => {
-  initializeUserData();
-  return JSON.parse(localStorage.getItem("feed_the_future_users") || "[]");
-};
-
-// Get current user
-export const getCurrentUser = (): User | null => {
-  const userJson = localStorage.getItem(CURRENT_USER_KEY);
-  return userJson ? JSON.parse(userJson) : null;
-};
-
-// Login
-export const login = (email: string, password: string): User | null => {
-  // In a real app, you would validate the password
-  // For this demo, we'll just check if the email exists
-  const users = getUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-  
-  if (user) {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-    return user;
-  }
-  
-  return null;
-};
-
-// Register
-export const register = (user: Omit<User, "id">): User | null => {
-  const users = getUsers();
-  
-  // Check if email already exists
-  if (users.some(u => u.email.toLowerCase() === user.email.toLowerCase())) {
-    return null;
-  }
-  
   // Create new user
   const newUser: User = {
-    ...user,
-    id: `user${Date.now()}`
+    id: generateId(),
+    ...userData
   };
-  
-  // Add to users array
-  users.push(newUser);
-  localStorage.setItem("feed_the_future_users", JSON.stringify(users));
-  
-  // Set as current user
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
-  
+
+  // In a real app, this would send the user data to a backend API
+  // For now, we'll add it to our mock data
+  mockUsers.push(newUser);
+
+  // Log in the new user
+  localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+
   return newUser;
 };
 
-// Logout
-export const logout = (): void => {
-  localStorage.removeItem(CURRENT_USER_KEY);
-};
+// Log in a user
+export const login = (email: string, password: string): User => {
+  // In a real app, this would validate credentials against a backend API
+  // For now, we'll check against our mock data
+  const user = mockUsers.find(u => u.email === email);
 
-// Check if user is authenticated
-export const isAuthenticated = (): boolean => {
-  return !!getCurrentUser();
-};
-
-// Check if user has specific role
-export const hasRole = (role: string): boolean => {
-  const user = getCurrentUser();
-  return user ? user.role === role : false;
-};
-
-// Auth context wrapper for protected routes
-export const requireAuth = (callback: () => void) => {
-  if (!isAuthenticated()) {
-    toast.error("You must be logged in to access this page");
-    window.location.href = "/login";
-    return;
+  if (!user) {
+    throw new Error("Invalid email or password");
   }
-  callback();
+
+  // In a real app, we would validate the password here
+  // But for demonstration purposes, we'll skip that step
+
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+  return user;
+};
+
+// Log out the current user
+export const logout = (): void => {
+  localStorage.removeItem(USER_KEY);
+};
+
+// Get the currently logged-in user
+export const getCurrentUser = (): User | null => {
+  const userJson = localStorage.getItem(USER_KEY);
+  if (!userJson) return null;
+
+  try {
+    return JSON.parse(userJson) as User;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    return null;
+  }
+};
+
+// Update user data
+export const updateUserProfile = (userData: Partial<User>): User | null => {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return null;
+
+  const updatedUser = { ...currentUser, ...userData };
+
+  // In a real app, this would update the user data on the backend
+  const userIndex = mockUsers.findIndex(u => u.id === currentUser.id);
+  if (userIndex !== -1) {
+    mockUsers[userIndex] = updatedUser;
+  }
+
+  // Update the local storage
+  localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+
+  return updatedUser;
 };

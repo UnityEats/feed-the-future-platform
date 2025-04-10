@@ -1,103 +1,73 @@
 
 import { Donation, DonationStatus } from "@/types";
 import { mockDonations } from "./mockData";
-import { getCurrentUser } from "./authService";
 
-// Store donations in localStorage
-const DONATIONS_KEY = "feed_the_future_donations";
-
-// Initialize donation data in localStorage if it doesn't exist
-const initializeDonationData = () => {
-  if (!localStorage.getItem(DONATIONS_KEY)) {
-    localStorage.setItem(DONATIONS_KEY, JSON.stringify(mockDonations));
-  }
-};
-
-// Get all donations
-export const getAllDonations = (): Donation[] => {
-  initializeDonationData();
-  return JSON.parse(localStorage.getItem(DONATIONS_KEY) || "[]");
-};
-
-// Get donation by ID
-export const getDonationById = (id: string): Donation | undefined => {
-  const donations = getAllDonations();
-  return donations.find(donation => donation.id === id);
-};
-
-// Get donations by donor ID
-export const getDonationsByDonorId = (donorId: string): Donation[] => {
-  const donations = getAllDonations();
-  return donations.filter(donation => donation.donorId === donorId);
-};
-
-// Get donations by NGO ID
-export const getDonationsByNgoId = (ngoId: string): Donation[] => {
-  const donations = getAllDonations();
-  return donations.filter(donation => donation.ngoId === ngoId);
-};
-
-// Get available donations for NGOs
-export const getAvailableDonations = (): Donation[] => {
-  const donations = getAllDonations();
-  return donations.filter(donation => donation.status === "pending");
+// Helper function to get a deterministic ID
+const generateId = (): string => {
+  return Math.random().toString(36).substring(2, 9);
 };
 
 // Create a new donation
-export const createDonation = (donation: Omit<Donation, "id" | "status" | "createdAt" | "updatedAt" | "donorId">): Donation => {
-  const donations = getAllDonations();
-  const currentUser = getCurrentUser();
-  
-  if (!currentUser) {
-    throw new Error("User must be logged in to create a donation");
+export const createDonation = (
+  donationData: Omit<Donation, "id" | "status" | "createdAt" | "updatedAt" | "donorId">
+): Donation => {
+  // Ensure all required fields are provided
+  if (!donationData.foodItem || !donationData.quantity || !donationData.unit || !donationData.expiryDate || !donationData.address) {
+    throw new Error("Missing required fields for donation");
   }
+
+  const currentDate = new Date().toISOString();
   
   const newDonation: Donation = {
-    ...donation,
-    id: `donation${Date.now()}`,
-    status: "pending",
-    donorId: currentUser.id,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    id: generateId(),
+    foodItem: donationData.foodItem,
+    quantity: donationData.quantity,
+    unit: donationData.unit,
+    expiryDate: donationData.expiryDate,
+    address: donationData.address,
+    status: "pending" as DonationStatus,
+    donorId: "current-user-id", // In a real app, this would be the logged-in user's ID
+    createdAt: currentDate,
+    updatedAt: currentDate
   };
+
+  // In a real app, this would send the donation to a backend API
+  // For now, we'll add it to our mock data
+  mockDonations.push(newDonation);
   
-  donations.push(newDonation);
-  localStorage.setItem(DONATIONS_KEY, JSON.stringify(donations));
-  
+  console.log("New donation created:", newDonation);
   return newDonation;
 };
 
-// Update donation status
-export const updateDonationStatus = (donationId: string, status: DonationStatus, ngoId?: string): Donation | null => {
-  const donations = getAllDonations();
-  const index = donations.findIndex(d => d.id === donationId);
+// Get all donations
+export const getDonations = (filters?: Partial<Donation>): Donation[] => {
+  // In a real app, this would fetch donations from a backend API with filters
+  // For now, we'll filter our mock data
+  if (!filters) return mockDonations;
   
-  if (index === -1) {
-    return null;
-  }
+  return mockDonations.filter(donation => {
+    return Object.entries(filters).every(([key, value]) => {
+      return donation[key as keyof Donation] === value;
+    });
+  });
+};
+
+// Update a donation's status
+export const updateDonationStatus = (
+  donationId: string,
+  newStatus: DonationStatus
+): Donation | null => {
+  // In a real app, this would update the donation on the backend
+  // For now, we'll update our mock data
+  const donationIndex = mockDonations.findIndex(d => d.id === donationId);
   
-  const updated: Donation = {
-    ...donations[index],
-    status,
-    ngoId: ngoId || donations[index].ngoId,
+  if (donationIndex === -1) return null;
+  
+  mockDonations[donationIndex] = {
+    ...mockDonations[donationIndex],
+    status: newStatus,
     updatedAt: new Date().toISOString()
   };
   
-  donations[index] = updated;
-  localStorage.setItem(DONATIONS_KEY, JSON.stringify(donations));
-  
-  return updated;
-};
-
-// Get donation statistics
-export const getDonationStats = () => {
-  const donations = getAllDonations();
-  
-  return {
-    total: donations.length,
-    pending: donations.filter(d => d.status === "pending").length,
-    accepted: donations.filter(d => d.status === "accepted").length,
-    collected: donations.filter(d => d.status === "collected").length,
-    expired: donations.filter(d => d.status === "expired").length,
-  };
+  return mockDonations[donationIndex];
 };
