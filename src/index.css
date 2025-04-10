@@ -44,45 +44,6 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 262 80% 70%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 270 60% 50%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 262 80% 25%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 262 80% 70%;
-
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 210 20% 98%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 220 13% 18%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 13% 18%;
-    --sidebar-ring: 224.3 76.3% 48%;
-  }
 }
 
 @layer base {
@@ -97,7 +58,7 @@
 
 @layer components {
   .hero-gradient {
-    @apply bg-gradient-to-r from-purple-light to-purple dark:from-purple/80 dark:to-purple-dark dark:text-white;
+    @apply bg-gradient-to-r from-purple-light to-purple;
   }
   
   .btn-primary {
@@ -109,10 +70,10 @@
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 dark:hover:shadow-primary/10;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
 
   .glass-card {
-    @apply backdrop-blur-lg bg-white/70 dark:bg-black/50 dark:border-white/5 shadow-lg;
+    @apply backdrop-blur-lg bg-white/70 shadow-lg;
   }
 }

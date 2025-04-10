@@ -2,7 +2,6 @@
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -73,7 +72,6 @@ export default {
                 },
                 purple: {
                     DEFAULT: '#9b87f5',
-                    dark: '#7E69AB',
                     light: '#D6BCFA',
                     vivid: '#8B5CF6',
                     soft: '#E5DEFF',

@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,10 +45,6 @@ const Navbar = () => {
             <Link to="/about" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">About</Link>
             <Link to="/ngos" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">NGOs</Link>
             <Link to="/contact" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted">Contact</Link>
-            
-            <div className="ml-2">
-              <ThemeToggle />
-            </div>
 
             {currentUser ? (
               <DropdownMenu>
@@ -87,10 +82,9 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
-            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center ml-2 p-2 rounded-md text-foreground hover:bg-muted"
+              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:bg-muted"
               aria-expanded="false"
             >
               <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
