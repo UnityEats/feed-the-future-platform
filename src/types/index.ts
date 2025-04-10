@@ -12,6 +12,8 @@ export interface User {
   address?: string;
   avatar?: string;
   bio?: string;
+  password?: string; // Added password field for registration
+  website?: string; // Added website field for NGO users
 }
 
 export interface Donation {
@@ -26,6 +28,7 @@ export interface Donation {
   ngoId?: string;
   createdAt: string;
   updatedAt: string;
+  notes?: string; // Added notes field for additional information
 }
 
 export interface NGO extends User {
