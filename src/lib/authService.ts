@@ -125,17 +125,19 @@ export const login = async (email: string, password: string): Promise<User | nul
       name: email.split('@')[0]
     };
 
-    // Fix: Use optional chaining for potentially undefined properties
+    // Fix: Use proper type handling for potentially undefined properties
     const user: User = {
       id: userData.id,
       name: userData.name || email.split('@')[0],
       email: userData.email || email,
       role: (userData.role as UserRole) || 'donor',
-      phone: userData.phone || undefined,
-      address: userData.address || undefined,
-      avatar: userData.avatar || undefined,
-      bio: userData.bio || undefined,
-      website: userData.website || undefined
+      // For properties that might not exist on the minimal user object,
+      // check if they exist before accessing them
+      phone: 'phone' in userData ? userData.phone : undefined,
+      address: 'address' in userData ? userData.address : undefined,
+      avatar: 'avatar' in userData ? userData.avatar : undefined,
+      bio: 'bio' in userData ? userData.bio : undefined,
+      website: 'website' in userData ? userData.website : undefined
     };
 
     // Store user in local storage for easy access
