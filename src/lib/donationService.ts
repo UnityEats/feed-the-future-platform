@@ -1,6 +1,7 @@
 
 import { Donation, DonationStatus } from "@/types";
-import { mockDonations } from "./mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Helper function to get a deterministic ID
 const generateId = (): string => {
@@ -8,95 +9,192 @@ const generateId = (): string => {
 };
 
 // Create a new donation
-export const createDonation = (
+export const createDonation = async (
   donationData: Omit<Donation, "id" | "status" | "createdAt" | "updatedAt" | "donorId">
-): Donation => {
+): Promise<Donation | null> => {
   // Ensure all required fields are provided
   if (!donationData.foodItem || !donationData.quantity || !donationData.unit || !donationData.expiryDate || !donationData.address) {
     throw new Error("Missing required fields for donation");
   }
 
-  const currentDate = new Date().toISOString();
-  
-  const newDonation: Donation = {
-    id: generateId(),
-    foodItem: donationData.foodItem,
-    quantity: donationData.quantity,
-    unit: donationData.unit,
-    expiryDate: donationData.expiryDate,
-    address: donationData.address,
-    status: "pending" as DonationStatus,
-    donorId: "current-user-id", // In a real app, this would be the logged-in user's ID
-    createdAt: currentDate,
-    updatedAt: currentDate
-  };
+  try {
+    const user = supabase.auth.getUser();
+    const donorId = (await user).data.user?.id;
 
-  // In a real app, this would send the donation to a backend API
-  // For now, we'll add it to our mock data
-  mockDonations.push(newDonation);
-  
-  console.log("New donation created:", newDonation);
-  return newDonation;
+    if (!donorId) {
+      throw new Error("User not authenticated");
+    }
+
+    const currentDate = new Date().toISOString();
+    
+    const { data, error } = await supabase
+      .from('donations')
+      .insert({
+        food_item: donationData.foodItem,
+        quantity: donationData.quantity,
+        unit: donationData.unit,
+        expiry_date: donationData.expiryDate,
+        address: donationData.address,
+        status: "pending",
+        donor_id: donorId,
+        notes: donationData.notes || null,
+      })
+      .select('*')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return mapDonationFromDB(data);
+  } catch (error: any) {
+    console.error("Error creating donation:", error.message);
+    toast.error("Failed to create donation");
+    return null;
+  }
 };
 
 // Get all donations
-export const getDonations = (filters?: Partial<Donation>): Donation[] => {
-  // In a real app, this would fetch donations from a backend API with filters
-  // For now, we'll filter our mock data
-  if (!filters) return mockDonations;
-  
-  return mockDonations.filter(donation => {
-    return Object.entries(filters).every(([key, value]) => {
-      return donation[key as keyof Donation] === value;
-    });
-  });
+export const getDonations = async (filters?: Partial<Donation>): Promise<Donation[]> => {
+  try {
+    let query = supabase.from('donations').select('*');
+    
+    if (filters) {
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.donorId) {
+        query = query.eq('donor_id', filters.donorId);
+      }
+      if (filters.ngoId) {
+        query = query.eq('ngo_id', filters.ngoId);
+      }
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return data.map(mapDonationFromDB);
+  } catch (error: any) {
+    console.error("Error fetching donations:", error.message);
+    toast.error("Failed to fetch donations");
+    return [];
+  }
 };
 
 // Update a donation's status
-export const updateDonationStatus = (
+export const updateDonationStatus = async (
   donationId: string,
   newStatus: DonationStatus,
   ngoId?: string
-): Donation | null => {
-  // In a real app, this would update the donation on the backend
-  // For now, we'll update our mock data
-  const donationIndex = mockDonations.findIndex(d => d.id === donationId);
-  
-  if (donationIndex === -1) return null;
-  
-  mockDonations[donationIndex] = {
-    ...mockDonations[donationIndex],
-    status: newStatus,
-    updatedAt: new Date().toISOString(),
-    ...(ngoId && { ngoId })
-  };
-  
-  return mockDonations[donationIndex];
+): Promise<Donation | null> => {
+  try {
+    const updateData: any = {
+      status: newStatus,
+      updated_at: new Date().toISOString()
+    };
+    
+    if (ngoId) {
+      updateData.ngo_id = ngoId;
+    }
+    
+    const { data, error } = await supabase
+      .from('donations')
+      .update(updateData)
+      .eq('id', donationId)
+      .select()
+      .single();
+      
+    if (error) {
+      throw error;
+    }
+    
+    return mapDonationFromDB(data);
+  } catch (error: any) {
+    console.error("Error updating donation status:", error.message);
+    toast.error("Failed to update donation status");
+    return null;
+  }
 };
 
 // Get donations by donor ID
-export const getDonationsByDonorId = (donorId: string): Donation[] => {
+export const getDonationsByDonorId = async (donorId: string): Promise<Donation[]> => {
   return getDonations({ donorId });
 };
 
 // Get donations by NGO ID
-export const getDonationsByNgoId = (ngoId: string): Donation[] => {
+export const getDonationsByNgoId = async (ngoId: string): Promise<Donation[]> => {
   return getDonations({ ngoId });
 };
 
 // Get available donations (pending donations without an NGO assigned)
-export const getAvailableDonations = (): Donation[] => {
-  return mockDonations.filter(donation => 
-    donation.status === "pending" && !donation.ngoId
-  );
+export const getAvailableDonations = async (): Promise<Donation[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('donations')
+      .select('*')
+      .eq('status', 'pending')
+      .is('ngo_id', null)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      throw error;
+    }
+    
+    return data.map(mapDonationFromDB);
+  } catch (error: any) {
+    console.error("Error fetching available donations:", error.message);
+    toast.error("Failed to fetch available donations");
+    return [];
+  }
 };
 
 // Get donation statistics
-export const getDonationStats = () => {
+export const getDonationStats = async () => {
+  try {
+    const { data: allDonations, error: allError } = await supabase
+      .from('donations')
+      .select('status');
+      
+    if (allError) {
+      throw allError;
+    }
+    
+    return {
+      total: allDonations.length,
+      pending: allDonations.filter(d => d.status === "pending").length,
+      accepted: allDonations.filter(d => d.status === "accepted").length,
+      collected: allDonations.filter(d => d.status === "collected").length,
+    };
+  } catch (error: any) {
+    console.error("Error fetching donation stats:", error.message);
+    toast.error("Failed to fetch donation statistics");
+    return {
+      total: 0,
+      pending: 0,
+      accepted: 0,
+      collected: 0,
+    };
+  }
+};
+
+// Helper function to map database columns to our Donation type
+const mapDonationFromDB = (data: any): Donation => {
   return {
-    total: mockDonations.length,
-    pending: mockDonations.filter(d => d.status === "pending").length,
-    accepted: mockDonations.filter(d => d.status === "accepted").length,
-    collected: mockDonations.filter(d => d.status === "collected").length,
+    id: data.id,
+    foodItem: data.food_item,
+    quantity: data.quantity,
+    unit: data.unit,
+    expiryDate: data.expiry_date,
+    address: data.address,
+    status: data.status as DonationStatus,
+    donorId: data.donor_id,
+    ngoId: data.ngo_id,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    notes: data.notes
   };
 };

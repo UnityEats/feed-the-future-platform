@@ -4,12 +4,36 @@ import { ArrowRight, Apple, Package, HeartHandshake, Award } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { mockDonations, mockTestimonials, mockStats } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { getDonations } from "@/lib/donationService";
+import { Donation } from "@/types";
 
 const Home = () => {
-  // Get the most recent donations
-  const recentDonations = [...mockDonations].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  ).slice(0, 3);
+  const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentDonations = async () => {
+      setIsLoading(true);
+      try {
+        const allDonations = await getDonations();
+        // Get the most recent 3 donations
+        const recent = allDonations.slice(0, 3);
+        setRecentDonations(recent);
+      } catch (error) {
+        console.error("Error fetching recent donations:", error);
+        // Fallback to mock data if API fails
+        const recent = [...mockDonations].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ).slice(0, 3);
+        setRecentDonations(recent);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecentDonations();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
