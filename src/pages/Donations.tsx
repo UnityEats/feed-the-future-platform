@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { getDonations } from "@/lib/donationService";
 import { Donation } from "@/types";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,14 +16,18 @@ const Donations = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadDonations = async () => {
     setIsLoading(true);
+    setError(null);
     try {
+      console.log("Fetching all donations");
       const donationsData = await getDonations();
       setDonations(donationsData);
-    } catch (error) {
-      console.error("Error loading donations:", error);
+    } catch (err: any) {
+      console.error("Error loading donations:", err);
+      setError(err.message || "Failed to load donations");
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +63,10 @@ const Donations = () => {
     setDialogOpen(true);
   };
 
+  const viewDonationDetails = (id: string) => {
+    navigate(`/donations/${id}`);
+  };
+
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -73,6 +81,24 @@ const Donations = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center mb-6">
+          <Button variant="ghost" className="pl-0 mr-4" onClick={() => navigate('/')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <h1 className="text-2xl font-bold">All Donations</h1>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-red-500 mb-4">{error}</p>
+          <Button onClick={() => loadDonations()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -103,6 +129,7 @@ const Donations = () => {
                 <TableHead>Expiry Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date Added</TableHead>
+                <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -110,17 +137,34 @@ const Donations = () => {
                 <TableRow 
                   key={donation.id}
                   className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleDonationClick(donation)}
                 >
-                  <TableCell className="font-medium">{donation.foodItem}</TableCell>
-                  <TableCell>{donation.quantity} {donation.unit}</TableCell>
-                  <TableCell>{new Date(donation.expiryDate).toLocaleDateString()}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium" onClick={() => handleDonationClick(donation)}>
+                    {donation.foodItem}
+                  </TableCell>
+                  <TableCell onClick={() => handleDonationClick(donation)}>
+                    {donation.quantity} {donation.unit}
+                  </TableCell>
+                  <TableCell onClick={() => handleDonationClick(donation)}>
+                    {new Date(donation.expiryDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell onClick={() => handleDonationClick(donation)}>
                     <Badge variant="outline" className={getStatusBadgeColor(donation.status)}>
                       {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(donation.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell onClick={() => handleDonationClick(donation)}>
+                    {new Date(donation.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => viewDonationDetails(donation.id)}
+                      title="View details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -134,7 +178,7 @@ const Donations = () => {
           <DialogHeader>
             <DialogTitle>Donation Details</DialogTitle>
             <DialogDescription>
-              Complete information about this donation
+              Summary information about this donation
             </DialogDescription>
           </DialogHeader>
           {selectedDonation && (
@@ -184,6 +228,12 @@ const Donations = () => {
                   <p className="text-sm font-medium text-gray-500">Last Updated</p>
                   <p className="text-base">{new Date(selectedDonation.updatedAt).toLocaleString()}</p>
                 </div>
+              </div>
+              
+              <div className="pt-4 flex justify-end">
+                <Button onClick={() => viewDonationDetails(selectedDonation.id)}>
+                  View Full Details
+                </Button>
               </div>
             </div>
           )}

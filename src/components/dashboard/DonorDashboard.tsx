@@ -20,17 +20,20 @@ import { Loader2 } from "lucide-react";
 const DonorDashboard = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const currentUser = getCurrentUser();
 
   useEffect(() => {
     const fetchDonations = async () => {
       if (currentUser) {
         try {
+          console.log("Fetching donations for donor:", currentUser.id);
           // Fetch donations made by the current user
           const userDonations = await getDonationsByDonorId(currentUser.id);
           setDonations(userDonations);
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching donations:", error);
+          setError(error.message || "Failed to fetch donations");
         } finally {
           setIsLoading(false);
         }
@@ -117,6 +120,15 @@ const DonorDashboard = () => {
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2">Loading donations...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
       </div>
     );
   }

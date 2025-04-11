@@ -20,6 +20,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Donations from "./pages/Donations";
+import DonationDetails from "./pages/DonationDetails";
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/donations" element={<Donations />} />
+              <Route path="/donations/:id" element={<DonationDetails />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Route>

@@ -25,7 +25,7 @@ export const createDonation = async (
       throw new Error("User not authenticated");
     }
 
-    const currentDate = new Date().toISOString();
+    console.log("Creating donation with donor ID:", donorId);
     
     const { data, error } = await supabase
       .from('donations')
@@ -43,9 +43,11 @@ export const createDonation = async (
       .single();
 
     if (error) {
+      console.error("Error creating donation:", error);
       throw error;
     }
 
+    console.log("Donation created:", data);
     return mapDonationFromDB(data);
   } catch (error: any) {
     console.error("Error creating donation:", error.message);
@@ -57,6 +59,7 @@ export const createDonation = async (
 // Get all donations
 export const getDonations = async (filters?: Partial<Donation>): Promise<Donation[]> => {
   try {
+    console.log("Getting donations with filters:", filters);
     let query = supabase.from('donations').select('*');
     
     if (filters) {
@@ -74,14 +77,16 @@ export const getDonations = async (filters?: Partial<Donation>): Promise<Donatio
     const { data, error } = await query.order('created_at', { ascending: false });
     
     if (error) {
+      console.error("Error fetching donations:", error);
       throw error;
     }
     
+    console.log("Fetched donations:", data.length);
     return data.map(mapDonationFromDB);
   } catch (error: any) {
     console.error("Error fetching donations:", error.message);
     toast.error("Failed to fetch donations");
-    return [];
+    throw error;
   }
 };
 
@@ -92,6 +97,8 @@ export const updateDonationStatus = async (
   ngoId?: string
 ): Promise<Donation | null> => {
   try {
+    console.log(`Updating donation ${donationId} to status ${newStatus}${ngoId ? ` with NGO ${ngoId}` : ''}`);
+    
     const updateData: any = {
       status: newStatus,
       updated_at: new Date().toISOString()
@@ -109,30 +116,49 @@ export const updateDonationStatus = async (
       .single();
       
     if (error) {
+      console.error("Error updating donation status:", error);
       throw error;
     }
     
+    console.log("Donation updated:", data);
     return mapDonationFromDB(data);
   } catch (error: any) {
     console.error("Error updating donation status:", error.message);
     toast.error("Failed to update donation status");
-    return null;
+    throw error;
   }
 };
 
 // Get donations by donor ID
 export const getDonationsByDonorId = async (donorId: string): Promise<Donation[]> => {
-  return getDonations({ donorId });
+  console.log("Getting donations for donor:", donorId);
+  try {
+    const result = await getDonations({ donorId });
+    console.log(`Found ${result.length} donations for donor ${donorId}`);
+    return result;
+  } catch (error) {
+    console.error("Error fetching donor donations:", error);
+    throw error;
+  }
 };
 
 // Get donations by NGO ID
 export const getDonationsByNgoId = async (ngoId: string): Promise<Donation[]> => {
-  return getDonations({ ngoId });
+  console.log("Getting donations for NGO:", ngoId);
+  try {
+    const result = await getDonations({ ngoId });
+    console.log(`Found ${result.length} donations for NGO ${ngoId}`);
+    return result;
+  } catch (error) {
+    console.error("Error fetching NGO donations:", error);
+    throw error;
+  }
 };
 
 // Get available donations (pending donations without an NGO assigned)
 export const getAvailableDonations = async (): Promise<Donation[]> => {
   try {
+    console.log("Getting available donations");
     const { data, error } = await supabase
       .from('donations')
       .select('*')
@@ -141,14 +167,16 @@ export const getAvailableDonations = async (): Promise<Donation[]> => {
       .order('created_at', { ascending: false });
       
     if (error) {
+      console.error("Error fetching available donations:", error);
       throw error;
     }
     
+    console.log(`Found ${data.length} available donations`);
     return data.map(mapDonationFromDB);
   } catch (error: any) {
     console.error("Error fetching available donations:", error.message);
     toast.error("Failed to fetch available donations");
-    return [];
+    throw error;
   }
 };
 
@@ -178,6 +206,34 @@ export const getDonationStats = async () => {
       accepted: 0,
       collected: 0,
     };
+  }
+};
+
+// Get a single donation by ID
+export const getDonationById = async (id: string): Promise<Donation | null> => {
+  try {
+    console.log("Getting donation by ID:", id);
+    const { data, error } = await supabase
+      .from('donations')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Error fetching donation:", error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.log("No donation found with ID:", id);
+      return null;
+    }
+    
+    console.log("Found donation:", data);
+    return mapDonationFromDB(data);
+  } catch (error: any) {
+    console.error("Error fetching donation:", error.message);
+    throw error;
   }
 };
 

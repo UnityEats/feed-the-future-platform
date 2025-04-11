@@ -22,6 +22,8 @@ const NGODashboard = () => {
   const [myDonations, setMyDonations] = useState<Donation[]>([]);
   const [availableDonations, setAvailableDonations] = useState<Donation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [acceptingDonationId, setAcceptingDonationId] = useState<string | null>(null);
+  const [collectingDonationId, setCollectingDonationId] = useState<string | null>(null);
   const currentUser = getCurrentUser();
 
   useEffect(() => {
@@ -37,6 +39,7 @@ const NGODashboard = () => {
           setAvailableDonations(available);
         } catch (error) {
           console.error("Error fetching donations:", error);
+          toast.error("Failed to fetch donations");
         } finally {
           setIsLoading(false);
         }
@@ -52,28 +55,39 @@ const NGODashboard = () => {
   const collectedDonations = myDonations.filter((d) => d.status === "collected");
 
   const handleAcceptDonation = async (donationId: string) => {
-    if (currentUser) {
-      try {
-        const updated = await updateDonationStatus(donationId, "accepted", currentUser.id);
+    if (!currentUser) {
+      toast.error("You must be logged in to accept donations");
+      return;
+    }
+    
+    setAcceptingDonationId(donationId);
+    
+    try {
+      console.log("Accepting donation:", donationId, "by NGO:", currentUser.id);
+      const updated = await updateDonationStatus(donationId, "accepted", currentUser.id);
+      
+      if (updated) {
+        toast.success("Donation accepted successfully");
         
-        if (updated) {
-          toast.success("Donation accepted successfully");
-          
-          // Update the state to reflect the changes
-          setAvailableDonations(prev => prev.filter(d => d.id !== donationId));
-          setMyDonations(prev => [...prev, updated]);
-        } else {
-          toast.error("Failed to accept donation");
-        }
-      } catch (error) {
-        console.error("Error accepting donation:", error);
+        // Update the state to reflect the changes
+        setAvailableDonations(prev => prev.filter(d => d.id !== donationId));
+        setMyDonations(prev => [...prev, updated]);
+      } else {
         toast.error("Failed to accept donation");
       }
+    } catch (error) {
+      console.error("Error accepting donation:", error);
+      toast.error("Failed to accept donation");
+    } finally {
+      setAcceptingDonationId(null);
     }
   };
 
   const handleMarkCollected = async (donationId: string) => {
+    setCollectingDonationId(donationId);
+    
     try {
+      console.log("Marking donation as collected:", donationId);
       const updated = await updateDonationStatus(donationId, "collected");
       
       if (updated) {
@@ -89,6 +103,8 @@ const NGODashboard = () => {
     } catch (error) {
       console.error("Error marking donation as collected:", error);
       toast.error("Failed to update donation status");
+    } finally {
+      setCollectingDonationId(null);
     }
   };
 
@@ -152,15 +168,31 @@ const NGODashboard = () => {
                 <Button 
                   onClick={() => handleAcceptDonation(donation.id)} 
                   className="w-full"
+                  disabled={acceptingDonationId === donation.id}
                 >
-                  Accept Donation
+                  {acceptingDonationId === donation.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Accepting...
+                    </>
+                  ) : (
+                    "Accept Donation"
+                  )}
                 </Button>
               ) : donation.status === "accepted" ? (
                 <Button 
                   onClick={() => handleMarkCollected(donation.id)} 
                   className="w-full"
+                  disabled={collectingDonationId === donation.id}
                 >
-                  Mark as Collected
+                  {collectingDonationId === donation.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Mark as Collected"
+                  )}
                 </Button>
               ) : (
                 <Button variant="outline" asChild className="w-full">
