@@ -78,6 +78,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      console.log("Registering donor with data:", { ...data, password: "***" });
       const newUser = await registerUser({
         role: "donor",
         name: data.name,
@@ -90,11 +91,9 @@ const Register = () => {
       if (newUser) {
         toast.success("Registration successful! Welcome to Feed the Future!");
         navigate("/dashboard");
-      } else {
-        toast.error("Email already in use. Please try another.");
       }
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
+    } catch (error: any) {
+      toast.error(error?.message || "An error occurred during registration. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -104,6 +103,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      console.log("Registering NGO with data:", { ...data, password: "***" });
       const newUser = await registerUser({
         role: "ngo",
         name: data.name,
@@ -118,11 +118,9 @@ const Register = () => {
       if (newUser) {
         toast.success("NGO registration submitted! Your account is pending verification.");
         navigate("/dashboard");
-      } else {
-        toast.error("Email already in use. Please try another.");
       }
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
+    } catch (error: any) {
+      toast.error(error?.message || "An error occurred during registration. Please try again.");
     } finally {
       setIsLoading(false);
     }

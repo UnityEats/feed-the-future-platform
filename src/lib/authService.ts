@@ -1,4 +1,3 @@
-
 import { User, UserRole } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,10 +16,12 @@ export const register = async (userData: Omit<User, "id">): Promise<User | null>
       .maybeSingle();
       
     if (checkError) {
+      console.error("Error checking existing user:", checkError);
       throw checkError;
     }
     
     if (existingUsers) {
+      console.log("Email already exists:", existingUsers);
       throw new Error("Email is already in use");
     }
 
@@ -31,6 +32,7 @@ export const register = async (userData: Omit<User, "id">): Promise<User | null>
     });
 
     if (authError || !authData.user) {
+      console.error("Auth error:", authError);
       throw authError || new Error("Failed to create user");
     }
 
@@ -52,6 +54,9 @@ export const register = async (userData: Omit<User, "id">): Promise<User | null>
       .single();
 
     if (profileError) {
+      console.error("Profile error:", profileError);
+      // If profile creation fails, delete the auth user to avoid orphaned accounts
+      await supabase.auth.admin.deleteUser(authData.user.id);
       throw profileError;
     }
 
