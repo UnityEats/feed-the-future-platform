@@ -121,10 +121,11 @@ export const login = async (email: string, password: string): Promise<User | nul
     const userData = profileData || {
       id: authData.user.id,
       email: email,
-      role: 'donor',
+      role: 'donor' as UserRole,
       name: email.split('@')[0]
     };
 
+    // Fix: Use optional chaining for potentially undefined properties
     const user: User = {
       id: userData.id,
       name: userData.name || email.split('@')[0],
@@ -255,11 +256,11 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
       name: data.name || '',
       email: data.email || '',
       role: data.role as UserRole || 'donor',
-      phone: data.phone || '',
-      address: data.address || '',
-      avatar: data.avatar || '',
-      bio: data.bio || '',
-      website: data.website || ''
+      phone: data.phone || undefined,
+      address: data.address || undefined,
+      avatar: data.avatar || undefined,
+      bio: data.bio || undefined,
+      website: data.website || undefined
     };
   } catch (error: any) {
     console.error("Error fetching user profile:", error.message);
