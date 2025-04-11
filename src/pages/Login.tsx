@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/authService";
 import { toast } from "sonner";
+import { User } from "@/types";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -39,22 +40,18 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, we'd make an API call here
-      // For this demo, we'll use our mock auth service
-      setTimeout(() => {
-        const user = login(data.email, data.password);
-        
-        if (user) {
-          toast.success(`Welcome back, ${user.name}!`);
-          navigate("/dashboard");
-        } else {
-          toast.error("Invalid email or password");
-        }
-        
-        setIsLoading(false);
-      }, 1000);
+      // Perform the login operation
+      const user = await login(data.email, data.password);
+      
+      if (user) {
+        toast.success(`Welcome back, ${user.name || 'User'}!`);
+        navigate("/dashboard");
+      } else {
+        toast.error("Invalid email or password");
+      }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };

@@ -18,8 +18,8 @@ export const createDonation = async (
   }
 
   try {
-    const user = supabase.auth.getUser();
-    const donorId = (await user).data.user?.id;
+    const user = await supabase.auth.getUser();
+    const donorId = user.data.user?.id;
 
     if (!donorId) {
       throw new Error("User not authenticated");

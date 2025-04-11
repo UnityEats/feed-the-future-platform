@@ -24,49 +24,67 @@ const NGODashboard = () => {
   const currentUser = getCurrentUser();
 
   useEffect(() => {
-    if (currentUser) {
-      // Fetch donations accepted by the current NGO
-      const ngoDonations = getDonationsByNgoId(currentUser.id);
-      setMyDonations(ngoDonations);
-      
-      // Fetch available donations
-      const available = getAvailableDonations();
-      setAvailableDonations(available);
-      
-      setIsLoading(false);
-    }
+    const fetchDonations = async () => {
+      if (currentUser) {
+        try {
+          // Fetch donations accepted by the current NGO
+          const ngoDonations = await getDonationsByNgoId(currentUser.id);
+          setMyDonations(ngoDonations);
+          
+          // Fetch available donations
+          const available = await getAvailableDonations();
+          setAvailableDonations(available);
+        } catch (error) {
+          console.error("Error fetching donations:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchDonations();
   }, [currentUser]);
 
   const acceptedDonations = myDonations.filter((d) => d.status === "accepted");
   const collectedDonations = myDonations.filter((d) => d.status === "collected");
 
-  const handleAcceptDonation = (donationId: string) => {
+  const handleAcceptDonation = async (donationId: string) => {
     if (currentUser) {
-      const updated = updateDonationStatus(donationId, "accepted", currentUser.id);
-      
-      if (updated) {
-        toast.success("Donation accepted successfully");
+      try {
+        const updated = await updateDonationStatus(donationId, "accepted", currentUser.id);
         
-        // Update the state to reflect the changes
-        setAvailableDonations(prev => prev.filter(d => d.id !== donationId));
-        setMyDonations(prev => [...prev, updated]);
-      } else {
+        if (updated) {
+          toast.success("Donation accepted successfully");
+          
+          // Update the state to reflect the changes
+          setAvailableDonations(prev => prev.filter(d => d.id !== donationId));
+          setMyDonations(prev => [...prev, updated]);
+        } else {
+          toast.error("Failed to accept donation");
+        }
+      } catch (error) {
+        console.error("Error accepting donation:", error);
         toast.error("Failed to accept donation");
       }
     }
   };
 
-  const handleMarkCollected = (donationId: string) => {
-    const updated = updateDonationStatus(donationId, "collected");
-    
-    if (updated) {
-      toast.success("Donation marked as collected");
+  const handleMarkCollected = async (donationId: string) => {
+    try {
+      const updated = await updateDonationStatus(donationId, "collected");
       
-      // Update the state to reflect the changes
-      setMyDonations(prev => 
-        prev.map(d => d.id === donationId ? { ...d, status: "collected" } : d)
-      );
-    } else {
+      if (updated) {
+        toast.success("Donation marked as collected");
+        
+        // Update the state to reflect the changes
+        setMyDonations(prev => 
+          prev.map(d => d.id === donationId ? { ...d, status: "collected" } : d)
+        );
+      } else {
+        toast.error("Failed to update donation status");
+      }
+    } catch (error) {
+      console.error("Error marking donation as collected:", error);
       toast.error("Failed to update donation status");
     }
   };

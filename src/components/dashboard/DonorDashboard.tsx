@@ -22,12 +22,21 @@ const DonorDashboard = () => {
   const currentUser = getCurrentUser();
 
   useEffect(() => {
-    if (currentUser) {
-      // Fetch donations made by the current user
-      const userDonations = getDonationsByDonorId(currentUser.id);
-      setDonations(userDonations);
-      setIsLoading(false);
-    }
+    const fetchDonations = async () => {
+      if (currentUser) {
+        try {
+          // Fetch donations made by the current user
+          const userDonations = await getDonationsByDonorId(currentUser.id);
+          setDonations(userDonations);
+        } catch (error) {
+          console.error("Error fetching donations:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchDonations();
   }, [currentUser]);
 
   const pendingDonations = donations.filter((d) => d.status === "pending");

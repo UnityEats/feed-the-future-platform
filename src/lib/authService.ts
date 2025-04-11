@@ -128,13 +128,13 @@ export const login = async (email: string, password: string): Promise<User | nul
     const user: User = {
       id: userData.id,
       name: userData.name || email.split('@')[0],
-      email: userData.email,
-      role: userData.role as UserRole,
-      phone: userData.phone,
-      address: userData.address,
-      avatar: userData.avatar,
-      bio: userData.bio,
-      website: userData.website
+      email: userData.email || email,
+      role: (userData.role as UserRole) || 'donor',
+      phone: userData.phone || undefined,
+      address: userData.address || undefined,
+      avatar: userData.avatar || undefined,
+      bio: userData.bio || undefined,
+      website: userData.website || undefined
     };
 
     // Store user in local storage for easy access
