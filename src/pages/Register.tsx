@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -16,13 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { register as registerUser } from "@/lib/authService";
 import { toast } from "sonner";
@@ -81,29 +78,24 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, we'd make an API call here
-      // For this demo, we'll use our mock auth service
-      setTimeout(() => {
-        const newUser = registerUser({
-          role: "donor",
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          phone: data.phone || undefined,
-          address: data.address || undefined,
-        });
-        
-        if (newUser) {
-          toast.success("Registration successful! Welcome to Feed the Future!");
-          navigate("/dashboard");
-        } else {
-          toast.error("Email already in use. Please try another.");
-        }
-        
-        setIsLoading(false);
-      }, 1000);
+      const newUser = await registerUser({
+        role: "donor",
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        phone: data.phone || undefined,
+        address: data.address || undefined,
+      });
+      
+      if (newUser) {
+        toast.success("Registration successful! Welcome to Feed the Future!");
+        navigate("/dashboard");
+      } else {
+        toast.error("Email already in use. Please try another.");
+      }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -112,30 +104,26 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, we'd make an API call here and handle verification
-      setTimeout(() => {
-        const newUser = registerUser({
-          role: "ngo",
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          phone: data.phone || undefined,
-          address: data.address || undefined,
-          website: data.website,
-          bio: data.bio,
-        });
-        
-        if (newUser) {
-          toast.success("NGO registration submitted! Your account is pending verification.");
-          navigate("/dashboard");
-        } else {
-          toast.error("Email already in use. Please try another.");
-        }
-        
-        setIsLoading(false);
-      }, 1000);
+      const newUser = await registerUser({
+        role: "ngo",
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        phone: data.phone || undefined,
+        address: data.address || undefined,
+        website: data.website,
+        bio: data.bio,
+      });
+      
+      if (newUser) {
+        toast.success("NGO registration submitted! Your account is pending verification.");
+        navigate("/dashboard");
+      } else {
+        toast.error("Email already in use. Please try another.");
+      }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };

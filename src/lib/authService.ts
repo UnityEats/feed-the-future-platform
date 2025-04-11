@@ -81,6 +81,7 @@ export const register = async (userData: Omit<User, "id">): Promise<User | null>
 // Log in a user
 export const login = async (email: string, password: string): Promise<User | null> => {
   try {
+    // Sign in with the provided email and password
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password
