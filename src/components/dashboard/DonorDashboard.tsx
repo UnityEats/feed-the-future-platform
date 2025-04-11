@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentUser } from "@/lib/authService";
 import { Donation } from "@/types";
 import { getDonationsByDonorId } from "@/lib/donationService";
+import { Loader2 } from "lucide-react";
 
 const DonorDashboard = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -33,6 +34,8 @@ const DonorDashboard = () => {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
     
@@ -112,7 +115,8 @@ const DonorDashboard = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p>Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading donations...</span>
       </div>
     );
   }

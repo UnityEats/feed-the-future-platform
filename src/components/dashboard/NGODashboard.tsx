@@ -16,6 +16,7 @@ import { getCurrentUser } from "@/lib/authService";
 import { Donation } from "@/types";
 import { getDonationsByNgoId, getAvailableDonations, updateDonationStatus } from "@/lib/donationService";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const NGODashboard = () => {
   const [myDonations, setMyDonations] = useState<Donation[]>([]);
@@ -39,6 +40,8 @@ const NGODashboard = () => {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
     
@@ -174,7 +177,8 @@ const NGODashboard = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p>Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading donations...</span>
       </div>
     );
   }

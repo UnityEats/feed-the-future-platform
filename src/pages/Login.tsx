@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/authService";
 import { toast } from "sonner";
-import { User } from "@/types";
 
 // Form validation schema
 const loginSchema = z.object({
